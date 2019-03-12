@@ -9,7 +9,6 @@ package sipparser
 import (
 	"errors"
 	"fmt"
-	"glaye/heplify-server/logp"
 	"strings"
 )
 
@@ -58,7 +57,6 @@ func parseStartLine(s *StartLine) parseStartLineStateFn {
 	if s.Error != nil {
 		return nil
 	}
-	logp.Info("glaye----------------s.val [ %s ]", s.Val)
 	if len(s.Val) < 3 {
 		s.Error = errors.New("parseStartLine err: length of s.Val is less than 3. Invalid start line")
 		return nil
@@ -90,13 +88,11 @@ func parseStartLineResponse(s *StartLine) parseStartLineStateFn {
 	s.Version = parts[0][charPos+1:]
 	s.Resp = parts[1]
 	s.RespText = parts[2]
-
 	return nil
 }
 
 func parseStartLineRequest(s *StartLine) parseStartLineStateFn {
 	parts := strings.SplitN(s.Val, " ", 3)
-
 	if len(parts) != 3 {
 		s.Error = errors.New("parseStartLineRequest err: request line did not split on LWS correctly")
 		return nil
@@ -121,16 +117,10 @@ func parseStartLineRequest(s *StartLine) parseStartLineStateFn {
 	}
 	s.Proto = parts[2][0:charPos]
 	s.Version = parts[2][charPos+1:]
-	//logp.Info("glaye-------------------------s.Method :[ %v ]", s.Method)
-	//logp.Info("glaye-------------------------s.URI :[ %v ]", s.URI)
-	logp.Info("glaye-------------------------s.Proto :[ %v ]", s.Proto)
-	logp.Info("glaye-------------------------s.Version :[ %v ]", s.Version)
 	return nil
 }
 
 func ParseStartLine(str string) *StartLine {
-	logp.Info("glaye   ParseStartLineParseStartLineParseStartLineParseStartLineParseStartLineParseStartLineParseStartLine")
-	logp.Info("glaye-------------------------str :[ %v ]", str)
 	s := &StartLine{Val: str}
 	s.run()
 	return s

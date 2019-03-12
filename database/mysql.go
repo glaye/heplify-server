@@ -11,13 +11,13 @@ import (
 )
 
 var (
-	callQuery     = []byte("INSERT INTO sip_capture_call_")
-	registerQuery = []byte("INSERT INTO sip_capture_registration_")
-	restQuery     = []byte("INSERT INTO sip_capture_rest_")
-	rtcpQuery     = []byte("INSERT INTO rtcp_capture_all_")
-	reportQuery   = []byte("INSERT INTO report_capture_all_")
-	dnsQuery      = []byte("INSERT INTO dns_capture_all_")
-	logQuery      = []byte("INSERT INTO logs_capture_all_")
+	callQuery     = []byte("INSERT INTO sip_capture_call")
+	registerQuery = []byte("INSERT INTO sip_capture_registration")
+	restQuery     = []byte("INSERT INTO sip_capture_rest")
+	rtcpQuery     = []byte("INSERT INTO rtcp_capture_all")
+	reportQuery   = []byte("INSERT INTO report_capture_all")
+	dnsQuery      = []byte("INSERT INTO dns_capture_all")
+	logQuery      = []byte("INSERT INTO logs_capture_all")
 
 	sipVal = []byte(`(
 			date, 
@@ -328,7 +328,8 @@ func (m *MySQL) insert(hCh chan *decoder.HEP) {
 }
 
 func (m *MySQL) bulkInsert(q, v []byte, rows []interface{}) {
-	tblDate := time.Now().In(time.UTC).AppendFormat(q, "20060102")
+	//tblDate := time.Now().In(time.UTC).AppendFormat(q, "20060102")
+	tblDate := q
 	query := make([]byte, len(tblDate)+len(v))
 	tdl := copy(query, tblDate)
 	copy(query[tdl:], v)

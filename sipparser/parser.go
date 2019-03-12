@@ -100,7 +100,7 @@ type SipMsg struct {
 	hdr              string
 	hdrv             string
 	//Via                []*Via
-	//StartLine *StartLine
+	//StartLine          *StartLine
 	//Headers            []*Header
 	//Accept             *Accept
 	//AlertInfo          string
