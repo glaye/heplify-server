@@ -1,0 +1,54 @@
+HEPAddr         = "0.0.0.0:9060"
+HEPTCPAddr      = ""
+HEPTLSAddr      = "0.0.0.0:9060"
+ESAddr          = ""
+ESDiscovery     = true
+MQDriver        = ""
+MQAddr          = ""
+MQTopic         = ""
+PromAddr        = ""
+PromTargetIP    = ""
+PromTargetName  = ""
+DBShema         = "homer7"
+DBDriver        = "postgres"
+DBAddr          = "localhost:5432"
+DBUser          = "postgres"
+DBPass          = ""
+DBDataTable     = "homer_data"
+DBConfTable     = "homer_config"
+DBTableSpace    = ""
+DBBulk          = 200
+DBTimer         = 2
+DBBuffer        = 400000
+DBWorker        = 8
+DBRotate        = true
+DBPartLog       = "2h"
+DBPartSip       = "1h"
+DBPartQos       = "6h"
+DBDropDays      = 14
+DBDropOnStart   = false
+Dedup           = false
+DiscardMethod   = []
+AlegIDs         = []
+LogDbg          = ""
+LogLvl          = "info"
+LogStd          = false
+Config          = "./heplify-server.toml"
+Version         = false
+
+# Examples:
+# -------------------------------------
+# ESAddr          = "http://127.0.0.1:9200"
+# DBShema         = "homer7"
+# DBDriver        = "postgres"
+# DBTableSpace    = "/var/lib/postgresql/data/homer"
+# PromAddr        = "0.0.0.0:8899"
+# PromTargetIP    = "10.1.2.111,10.1.2.4,10.1.2.5,10.1.2.6,10.12.44.222"
+# PromTargetName  = "sbc_access,sbc_core,kamailio,asterisk,pstn_gateway"
+# AlegIDs         = ["X-CID","P-Charging-Vector","X-BroadWorks-Correlation-Info"]
+# DiscardMethod   = ["OPTIONS","NOTIFY"]
+# LogDbg          = "hep,sql"
+# LogLvl          = "warning"
+# -------------------------------------
+# To hot reload PromTargetIP and PromTargetName run:
+# killall -HUP heplify-server
