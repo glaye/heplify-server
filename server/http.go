@@ -4,10 +4,10 @@ import (
 	"strings"
 	"sync/atomic"
 
-	"github.com/negbie/heplify-server/config"
-	"github.com/negbie/heplify-server/decoder"
-	"github.com/negbie/logp"
 	"github.com/valyala/fasthttp"
+	"glaye/heplify-server/config"
+	"glaye/heplify-server/decoder"
+	"glaye/heplify-server/logp"
 )
 
 func (h *HEPInput) serveHTTP() {

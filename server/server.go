@@ -6,13 +6,13 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/negbie/heplify-server/config"
-	"github.com/negbie/heplify-server/database"
-	"github.com/negbie/heplify-server/decoder"
-	"github.com/negbie/heplify-server/metric"
-	"github.com/negbie/heplify-server/queue"
-	"github.com/negbie/heplify-server/remotelog"
-	"github.com/negbie/logp"
+	"glaye/heplify-server/config"
+	"glaye/heplify-server/database"
+	"glaye/heplify-server/decoder"
+	"glaye/heplify-server/logp"
+	"glaye/heplify-server/metric"
+	"glaye/heplify-server/queue"
+	"glaye/heplify-server/remotelog"
 )
 
 type HEPInput struct {

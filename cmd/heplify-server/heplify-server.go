@@ -13,9 +13,9 @@ import (
 	//_ "net/http/pprof"
 
 	"github.com/koding/multiconfig"
-	"github.com/negbie/heplify-server/config"
-	input "github.com/negbie/heplify-server/server"
-	"github.com/negbie/logp"
+	"glaye/heplify-server/config"
+	"glaye/heplify-server/logp"
+	input "glaye/heplify-server/server"
 )
 
 type server interface {

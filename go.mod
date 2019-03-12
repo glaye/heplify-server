@@ -1,4 +1,4 @@
-module github.com/negbie/heplify-server
+module glaye/heplify-server
 
 require (
 	github.com/BurntSushi/toml v0.3.1 // indirect
@@ -26,8 +26,8 @@ require (
 	github.com/nats-io/go-nats v1.7.0
 	github.com/nats-io/nkeys v0.0.2 // indirect
 	github.com/nats-io/nuid v1.0.0 // indirect
-	github.com/negbie/logp v0.0.0-20181018124411-1d803349a741
-	github.com/negbie/sipparser v0.0.0-20190207103644-5d7e09b37f37
+	glaye/heplify-server/logp v0.0.0-20181018124411-1d803349a741
+	glaye/heplify-server/sipparser v0.0.0-20190207103644-5d7e09b37f37
 	github.com/nsqio/go-nsq v1.0.7
 	github.com/olivere/elastic v6.2.16+incompatible
 	github.com/pkg/errors v0.8.1 // indirect

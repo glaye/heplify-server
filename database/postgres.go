@@ -7,10 +7,10 @@ import (
 
 	"github.com/buger/jsonparser"
 	_ "github.com/lib/pq"
-	"github.com/negbie/heplify-server/config"
-	"github.com/negbie/heplify-server/decoder"
-	"github.com/negbie/logp"
 	"github.com/valyala/bytebufferpool"
+	"glaye/heplify-server/config"
+	"glaye/heplify-server/decoder"
+	"glaye/heplify-server/logp"
 )
 
 type Postgres struct {

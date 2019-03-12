@@ -15,7 +15,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/negbie/logp"
+	"glaye/heplify-server/logp"
 )
 
 var (

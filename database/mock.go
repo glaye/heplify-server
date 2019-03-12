@@ -1,9 +1,9 @@
 package database
 
 import (
-	"github.com/negbie/heplify-server/config"
-	"github.com/negbie/heplify-server/decoder"
 	"github.com/valyala/bytebufferpool"
+	"glaye/heplify-server/config"
+	"glaye/heplify-server/decoder"
 )
 
 type Mock struct {

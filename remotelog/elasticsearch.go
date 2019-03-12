@@ -10,10 +10,10 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/negbie/heplify-server/config"
-	"github.com/negbie/heplify-server/decoder"
-	"github.com/negbie/logp"
 	"github.com/olivere/elastic"
+	"glaye/heplify-server/config"
+	"glaye/heplify-server/decoder"
+	"glaye/heplify-server/logp"
 )
 
 type Elasticsearch struct {

@@ -12,10 +12,10 @@ import (
 
 	"github.com/coocood/freecache"
 	lru "github.com/hashicorp/golang-lru"
-	"github.com/negbie/heplify-server/config"
-	"github.com/negbie/heplify-server/decoder"
-	"github.com/negbie/logp"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"glaye/heplify-server/config"
+	"glaye/heplify-server/decoder"
+	"glaye/heplify-server/logp"
 )
 
 type Prometheus struct {

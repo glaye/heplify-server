@@ -2,8 +2,8 @@ package queue
 
 import (
 	nats "github.com/nats-io/go-nats"
-	"github.com/negbie/heplify-server/config"
-	"github.com/negbie/logp"
+	"glaye/heplify-server/config"
+	"glaye/heplify-server/logp"
 )
 
 // NATS producer struct

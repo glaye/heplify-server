@@ -5,8 +5,8 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/negbie/heplify-server/config"
-	"github.com/negbie/heplify-server/decoder"
+	"glaye/heplify-server/config"
+	"glaye/heplify-server/decoder"
 )
 
 type Database struct {

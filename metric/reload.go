@@ -5,8 +5,8 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/negbie/heplify-server/config"
-	"github.com/negbie/logp"
+	"glaye/heplify-server/config"
+	"glaye/heplify-server/logp"
 )
 
 func cutSpace(str string) string {

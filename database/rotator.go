@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/go-sql-driver/mysql"
-	"github.com/negbie/heplify-server/config"
-	"github.com/negbie/logp"
 	"github.com/robfig/cron"
+	"glaye/heplify-server/config"
+	"glaye/heplify-server/logp"
 )
 
 const (

@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/buger/jsonparser"
-	"github.com/negbie/logp"
+	"glaye/heplify-server/logp"
 )
 
 var (

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/negbie/heplify-server/config"
-	"github.com/negbie/heplify-server/decoder"
+	"glaye/heplify-server/config"
+	"glaye/heplify-server/decoder"
 )
 
 var pmCh = make(chan *decoder.HEP, 20000)

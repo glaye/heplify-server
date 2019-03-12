@@ -7,8 +7,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/negbie/heplify-server/config"
-	"github.com/negbie/logp"
+	"glaye/heplify-server/config"
+	"glaye/heplify-server/logp"
 )
 
 func (h *HEPInput) serveTCP() {
