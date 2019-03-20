@@ -70,11 +70,11 @@ func (p *Prometheus) expose(hCh chan *decoder.HEP) {
 				var ok bool
 				st, ok = p.TargetMap[pkt.SrcIP]
 				if ok {
-					methodResponses.WithLabelValues(st, "src", "", pkt.SIP.FirstMethod, pkt.SIP.CseqMethod).Inc()
+					methodResponses.WithLabelValues(st, "src", "", pkt.SIP.FirstMethod, pkt.SIP.CseqMethod, pkt.SIP.FromUser, pkt.SIP.ToUser).Inc()
 				}
 				dt, ok = p.TargetMap[pkt.DstIP]
 				if ok {
-					methodResponses.WithLabelValues(dt, "dst", "", pkt.SIP.FirstMethod, pkt.SIP.CseqMethod).Inc()
+					methodResponses.WithLabelValues(dt, "dst", "", pkt.SIP.FirstMethod, pkt.SIP.CseqMethod, pkt.SIP.FromUser, pkt.SIP.ToUser).Inc()
 				}
 			} else {
 				_, err := p.cache.Get([]byte(pkt.CID + pkt.SIP.FirstMethod + pkt.SIP.CseqMethod))
@@ -85,7 +85,7 @@ func (p *Prometheus) expose(hCh chan *decoder.HEP) {
 				if err != nil {
 					logp.Warn("%v", err)
 				}
-				methodResponses.WithLabelValues("", "", pkt.Node, pkt.SIP.FirstMethod, pkt.SIP.CseqMethod).Inc()
+				methodResponses.WithLabelValues("", "", pkt.Node, pkt.SIP.FirstMethod, pkt.SIP.CseqMethod, pkt.SIP.FromUser, pkt.SIP.ToUser).Inc()
 			}
 
 			p.requestDelay(st, dt, pkt.CID, pkt.SIP.FirstMethod, pkt.SIP.CseqMethod, pkt.Timestamp)

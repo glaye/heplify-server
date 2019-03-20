@@ -8,7 +8,8 @@
 ### 我修改的：
 * 1 把包的依赖改到本地
 * 2 数据库回滚交到DBServer自己，程序不负责，存消息的表名去掉"_日期"
-* 3 不用程序建库建表，改成mysql导入脚本方式
+* 3 添加caller和called的 metric
+* 4 不用程序建库建表，改成mysql导入脚本方式
     * 导入数据库
     
         mysql --user=root --password=cqt@1234 < sql/wgy_databases.sql
