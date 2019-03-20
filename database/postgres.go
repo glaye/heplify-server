@@ -15,6 +15,7 @@ import (
 
 type Postgres struct {
 	db      *sql.DB
+	dbTimer time.Duration
 	bulkCnt int
 }
 
@@ -33,14 +34,9 @@ const (
 //var queryValCnt = 5
 
 func (p *Postgres) setup() error {
-	cs, err := connectString(config.Setting.DBDataTable)
+	cs, err := ConnectString(config.Setting.DBDataTable)
 	if err != nil {
 		return err
-	}
-
-	if config.Setting.DBRotate {
-		r := NewRotator()
-		r.Rotate()
 	}
 
 	if p.db, err = sql.Open(config.Setting.DBDriver, cs); err != nil {
@@ -61,6 +57,7 @@ func (p *Postgres) setup() error {
 	if p.bulkCnt < 1 {
 		p.bulkCnt = 1
 	}
+	p.dbTimer = time.Duration(config.Setting.DBTimer) * time.Second
 
 	logp.Info("%s connection established\n", config.Setting.DBDriver)
 	return nil
@@ -78,7 +75,7 @@ func (p *Postgres) insert(hCh chan *decoder.HEP) {
 		isupRows   = make([]string, 0, p.bulkCnt)
 		rtcpRows   = make([]string, 0, p.bulkCnt)
 		reportRows = make([]string, 0, p.bulkCnt)
-		maxWait    = time.Duration(config.Setting.DBTimer) * time.Second
+		maxWait    = p.dbTimer
 	)
 
 	timer := time.NewTimer(maxWait)
@@ -96,7 +93,10 @@ func (p *Postgres) insert(hCh chan *decoder.HEP) {
 		select {
 		case pkt, ok := <-hCh:
 			if !ok {
-				break
+				if p.db != nil {
+					p.db.Close()
+				}
+				return
 			}
 
 			date := pkt.Timestamp.Format(time.RFC3339Nano)

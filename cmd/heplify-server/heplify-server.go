@@ -2,17 +2,16 @@ package main
 
 import (
 	"fmt"
+	"html/template"
+	"net/http"
 	"os"
 	"os/signal"
-	"runtime/debug"
 	"strings"
 	"sync"
 	"syscall"
 
-	//"net"
-	//_ "net/http/pprof"
-
 	"github.com/koding/multiconfig"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"glaye/heplify-server/config"
 	"glaye/heplify-server/logp"
 	input "glaye/heplify-server/server"
@@ -26,7 +25,6 @@ type server interface {
 func init() {
 	var err error
 	var logging logp.Logging
-	var fileRotator logp.FileRotator
 
 	c := multiconfig.New()
 	cfg := new(config.HeplifyServer)
@@ -46,11 +44,16 @@ func init() {
 	}
 
 	logp.DebugSelectorsStr = &config.Setting.LogDbg
-	logging.Level = config.Setting.LogLvl
 	logp.ToStderr = &config.Setting.LogStd
-	fileRotator.Path = "./"
-	fileRotator.Name = "heplify-server.log"
-	logging.Files = &fileRotator
+	logging.Level = config.Setting.LogLvl
+	if config.Setting.LogSys {
+		logging.ToSyslog = &config.Setting.LogSys
+	} else {
+		var fileRotator logp.FileRotator
+		fileRotator.Path = "./"
+		fileRotator.Name = "heplify-server.log"
+		logging.Files = &fileRotator
+	}
 
 	err = logp.Init("heplify-server", &logging)
 	if err != nil {
@@ -70,38 +73,72 @@ func tomlExists(f string) bool {
 }
 
 func main() {
-	if config.Setting.Version {
-		fmt.Println(config.Version)
-		os.Exit(0)
-	}
+	var servers []server
 	var wg sync.WaitGroup
 	var sigCh = make(chan os.Signal, 1)
-
-	//go http.ListenAndServe(":8181", http.DefaultServeMux)
-	debug.SetGCPercent(50)
 	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
-	hep := input.NewHEPInput()
-	servers := []server{hep}
+
 	/* 	autopprof.Capture(autopprof.CPUProfile{
 		Duration: 15 * time.Second,
 	}) */
 
-	for _, srv := range servers {
-		wg.Add(1)
-		go func(s server) {
-			defer wg.Done()
-			s.Run()
-		}(srv)
+	startServer := func() {
+		hep := input.NewHEPInput()
+		servers = []server{hep}
+		for _, srv := range servers {
+			wg.Add(1)
+			go func(s server) {
+				defer wg.Done()
+				s.Run()
+			}(srv)
+		}
+	}
+	endServer := func() {
+		for _, srv := range servers {
+			wg.Add(1)
+			go func(s server) {
+				defer wg.Done()
+				s.End()
+			}(srv)
+		}
+		wg.Wait()
 	}
 
+	if len(config.Setting.ConfigHTTPAddr) > 2 {
+		tmpl := template.Must(template.New("main").Parse(config.WebForm))
+		http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+			if r.Method != http.MethodPost {
+				tmpl.Execute(w, config.Setting)
+				return
+			}
+
+			cfg, err := config.WebConfig(r)
+			if err != nil {
+				logp.Warn("Failed config reload from %v. %v", r.RemoteAddr, err)
+				tmpl.Execute(w, config.Setting)
+				return
+			}
+			logp.Info("Successfull config reloaded from %v", r.RemoteAddr)
+			endServer()
+			config.Setting = *cfg
+			tmpl.Execute(w, config.Setting)
+			startServer()
+		})
+
+		go http.ListenAndServe(config.Setting.ConfigHTTPAddr, nil)
+	}
+
+	if promAddr := config.Setting.PromAddr; len(promAddr) > 2 {
+		go func() {
+			http.Handle("/metrics", promhttp.Handler())
+			err := http.ListenAndServe(promAddr, nil)
+			if err != nil {
+				logp.Err("%v", err)
+			}
+		}()
+	}
+
+	startServer()
 	<-sigCh
-
-	for _, srv := range servers {
-		wg.Add(1)
-		go func(s server) {
-			defer wg.Done()
-			s.End()
-		}(srv)
-	}
-	wg.Wait()
+	endServer()
 }

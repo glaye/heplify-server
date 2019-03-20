@@ -2,17 +2,12 @@ package metric
 
 import (
 	"fmt"
-	"net/http"
-	"os"
-	"os/signal"
 	"strings"
 	"sync"
-	"syscall"
 	"time"
 
 	"github.com/coocood/freecache"
 	lru "github.com/hashicorp/golang-lru"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"glaye/heplify-server/config"
 	"glaye/heplify-server/decoder"
 	"glaye/heplify-server/logp"
@@ -32,15 +27,6 @@ func (p *Prometheus) setup() (err error) {
 	p.TargetConf = new(sync.RWMutex)
 	p.TargetIP = strings.Split(cutSpace(config.Setting.PromTargetIP), ",")
 	p.TargetName = strings.Split(cutSpace(config.Setting.PromTargetName), ",")
-
-	s := make(chan os.Signal, 1)
-	signal.Notify(s, syscall.SIGHUP)
-	go func() {
-		for {
-			<-s
-			p.loadPromConf()
-		}
-	}()
 
 	if len(p.TargetIP) == len(p.TargetName) && p.TargetIP != nil && p.TargetName != nil {
 		if len(p.TargetIP[0]) == 0 || len(p.TargetName[0]) == 0 {
@@ -68,13 +54,6 @@ func (p *Prometheus) setup() (err error) {
 		return err
 	}
 
-	go func() {
-		http.Handle("/metrics", promhttp.Handler())
-		err = http.ListenAndServe(config.Setting.PromAddr, nil)
-		if err != nil {
-			logp.Err("%v", err)
-		}
-	}()
 	return err
 }
 
@@ -91,11 +70,11 @@ func (p *Prometheus) expose(hCh chan *decoder.HEP) {
 				var ok bool
 				st, ok = p.TargetMap[pkt.SrcIP]
 				if ok {
-					methodResponses.WithLabelValues(st, "src", "", pkt.SIP.FirstMethod, pkt.SIP.CseqMethod, pkt.SIP.FromUser, pkt.SIP.ToUser).Inc()
+					methodResponses.WithLabelValues(st, "src", "", pkt.SIP.FirstMethod, pkt.SIP.CseqMethod).Inc()
 				}
 				dt, ok = p.TargetMap[pkt.DstIP]
 				if ok {
-					methodResponses.WithLabelValues(dt, "dst", "", pkt.SIP.FirstMethod, pkt.SIP.CseqMethod, pkt.SIP.FromUser, pkt.SIP.ToUser).Inc()
+					methodResponses.WithLabelValues(dt, "dst", "", pkt.SIP.FirstMethod, pkt.SIP.CseqMethod).Inc()
 				}
 			} else {
 				_, err := p.cache.Get([]byte(pkt.CID + pkt.SIP.FirstMethod + pkt.SIP.CseqMethod))
@@ -106,7 +85,7 @@ func (p *Prometheus) expose(hCh chan *decoder.HEP) {
 				if err != nil {
 					logp.Warn("%v", err)
 				}
-				methodResponses.WithLabelValues("", "", pkt.Node, pkt.SIP.FirstMethod, pkt.SIP.CseqMethod, pkt.SIP.FromUser, pkt.SIP.ToUser).Inc()
+				methodResponses.WithLabelValues("", "", pkt.Node, pkt.SIP.FirstMethod, pkt.SIP.CseqMethod).Inc()
 			}
 
 			p.requestDelay(st, dt, pkt.CID, pkt.SIP.FirstMethod, pkt.SIP.CseqMethod, pkt.Timestamp)

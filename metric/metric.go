@@ -1,18 +1,24 @@
 package metric
 
 import (
+	"os"
+	"os/signal"
 	"runtime"
+	"syscall"
 
 	"glaye/heplify-server/decoder"
+	"glaye/heplify-server/logp"
 )
 
 type Metric struct {
 	H    MetricHandler
 	Chan chan *decoder.HEP
+	quit chan bool
 }
 
 type MetricHandler interface {
 	setup() error
+	reload()
 	expose(chan *decoder.HEP)
 }
 
@@ -22,7 +28,8 @@ func New(name string) *Metric {
 	}
 
 	return &Metric{
-		H: register[name],
+		H:    register[name],
+		quit: make(chan bool),
 	}
 }
 
@@ -37,9 +44,27 @@ func (m *Metric) Run() error {
 			m.H.expose(m.Chan)
 		}()
 	}
+
+	s := make(chan os.Signal, 1)
+	signal.Notify(s, syscall.SIGHUP)
+	go func() {
+		for {
+			select {
+			case <-s:
+				m.H.reload()
+			case <-m.quit:
+				m.quit <- true
+				return
+			}
+		}
+	}()
+
 	return nil
 }
 
 func (m *Metric) End() {
+	m.quit <- true
+	<-m.quit
 	close(m.Chan)
+	logp.Info("close metric channel")
 }

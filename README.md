@@ -27,8 +27,8 @@
 ### Installation
 You have 3 options to get **heplify-server** up and running:
 
-* Download a [release](https://github.com/sipcapture/heplify-server/releases)
-* Docker [compose](https://github.com/sipcapture/heplify-server/tree/master/docker/hom5-hep-prom-graf)
+* Download a [release](https://glaye/heplify-server/releases)
+* Docker [compose](https://glaye/heplify-server/tree/master/docker/hom5-hep-prom-graf)
 * Compile from sources:  
   
   [install](https://golang.org/doc/install) Go 1.11+
@@ -37,9 +37,9 @@ You have 3 options to get **heplify-server** up and running:
 
 
 ### Configuration
-**heplify-server** can be configured using command-line flags, environment variables or by defining a local [configuration file](https://github.com/sipcapture/heplify-server/blob/master/example/)
+**heplify-server** can be configured using command-line flags, environment variables or by defining a local [configuration file](https://glaye/heplify-server/blob/master/example/)
 
-To setup a systemd service use the sample [service file](https://github.com/sipcapture/heplify-server/blob/master/example/) 
+To setup a systemd service use the sample [service file](https://glaye/heplify-server/blob/master/example/) 
 and follow the instructions at the top.
 
 Since version 0.92 its possible to hot reload PromTargetIP and PromTargetName when you change them inside the configuration file.
@@ -53,14 +53,14 @@ killall -HUP heplify-server
 ./heplify-server -h
 ```
 ##### Docker
-A sample Docker [compose](https://github.com/sipcapture/heplify-server/tree/master/docker/hom5-hep-prom-graf) file is available providing heplify-server, Homer 5 UI, Prometheus, Alertmanager and Grafana in seconds!
+A sample Docker [compose](https://glaye/heplify-server/tree/master/docker/hom5-hep-prom-graf) file is available providing heplify-server, Homer 5 UI, Prometheus, Alertmanager and Grafana in seconds!
 ```
 cd heplify-server/docker/hom5-hep-prom-graf/
 docker-compose up -d
 ```
 
 ### Support
-* Testers, Reporters and Contributors [welcome](https://github.com/sipcapture/heplify-server/issues)
+* Testers, Reporters and Contributors [welcome](https://glaye/heplify-server/issues)
 
 ### Screenshots
 ![sip_metrics](https://user-images.githubusercontent.com/20154956/39880524-57838c04-547e-11e8-8dec-262184192742.png)

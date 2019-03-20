@@ -7,6 +7,7 @@ import (
 
 	"glaye/heplify-server/config"
 	"glaye/heplify-server/decoder"
+	"glaye/heplify-server/logp"
 )
 
 type Database struct {
@@ -67,9 +68,10 @@ func (d *Database) Run() error {
 
 func (d *Database) End() {
 	close(d.Chan)
+	logp.Info("close %s channel", config.Setting.DBDriver)
 }
 
-func connectString(dbName string) (string, error) {
+func ConnectString(dbName string) (string, error) {
 	var dsn string
 	driver := config.Setting.DBDriver
 	addr := strings.Split(config.Setting.DBAddr, ":")

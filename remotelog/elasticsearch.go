@@ -4,10 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"os"
-	"os/signal"
 	"runtime"
-	"syscall"
 	"time"
 
 	"github.com/olivere/elastic"
@@ -25,18 +22,14 @@ type Elasticsearch struct {
 func (e *Elasticsearch) setup() error {
 	var err error
 	e.ctx = context.Background()
-	for {
-		e.client, err = elastic.NewClient(
-			elastic.SetURL(config.Setting.ESAddr),
-			elastic.SetSniff(config.Setting.ESDiscovery),
-		)
-		if err != nil {
-			logp.Err("%v", err)
-			time.Sleep(5 * time.Second)
-		} else {
-			break
-		}
+	e.client, err = elastic.NewClient(
+		elastic.SetURL(config.Setting.ESAddr),
+		elastic.SetSniff(config.Setting.ESDiscovery),
+	)
+	if err != nil {
+		return err
 	}
+
 	e.bulkClient, err = e.client.BulkProcessor().
 		Name("ESBulkProcessor").
 		Workers(runtime.NumCPU()).
@@ -59,41 +52,31 @@ func (e *Elasticsearch) setup() error {
 		return err
 	}
 
-	go func(e *elastic.BulkProcessor) {
-		for range time.Tick(5 * time.Minute) {
-			printStats(e)
-		}
-	}(e.bulkClient)
-
 	return nil
 }
 
 func (e *Elasticsearch) start(hCh chan *decoder.HEP) {
-	var (
-		pkt *decoder.HEP
-		ok  bool
-	)
 
-	c := make(chan os.Signal, 2)
-	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	defer func() {
+		logp.Info("heplify-server wants to stop flush remaining es bulk index requests")
+		err := e.bulkClient.Flush()
+		if err != nil {
+			logp.Err("%v", err)
+		}
+	}()
+
 	ticker := time.NewTicker(12 * time.Hour)
-
+	defer ticker.Stop()
 	for {
 		select {
-		case pkt, ok = <-hCh:
+		case pkt, ok := <-hCh:
 			if !ok {
-				break
+				return
 			}
 			r := elastic.NewBulkIndexRequest().Index("heplify-server-" + time.Now().Format("2006-01-02")).Type("hep").Doc(pkt)
 			e.bulkClient.Add(r)
 		case <-ticker.C:
 			err := e.createIndex(e.ctx, e.client)
-			if err != nil {
-				logp.Warn("%v", err)
-			}
-		case <-c:
-			logp.Info("heplify-server wants to stop flush remaining es bulk index requests")
-			err := e.bulkClient.Flush()
 			if err != nil {
 				logp.Warn("%v", err)
 			}

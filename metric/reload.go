@@ -18,7 +18,7 @@ func cutSpace(str string) string {
 	}, str)
 }
 
-func (p *Prometheus) loadPromConf() {
+func (p *Prometheus) reload() {
 	var fsTargetIP []string
 	var fsTargetName []string
 

@@ -9,7 +9,7 @@ import (
 	"runtime/pprof"
 	"time"
 
-	"github.com/negbie/sipparser"
+	"glaye/heplify-server/sipparser"
 )
 
 var (
