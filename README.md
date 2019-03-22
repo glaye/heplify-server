@@ -24,6 +24,7 @@
         grant all privileges on wgy_configuration.* to wgy_user@'%' identified by 'wgy_password';
     
         FLUSH PRIVILEGES;
+* 5 删除metric中的node_id，找不到它的规律，感觉目录是没用的
 
 ### Installation
 You have 3 options to get **heplify-server** up and running:

@@ -18,7 +18,7 @@ var (
 	methodResponses = promauto.NewCounterVec(prometheus.CounterOpts{
 		Name: "heplify_method_response",
 		Help: "SIP method and response counter"},
-		[]string{"target_name", "direction", "node_id", "response", "method", "caller"})
+		[]string{"target_name", "direction", "response", "method", "caller"})
 	reasonCause = promauto.NewCounterVec(prometheus.CounterOpts{
 		Name: "heplify_reason_isup_total",
 		Help: "ISUP Q.850 cause from reason header"},

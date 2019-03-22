@@ -86,6 +86,7 @@ func (p *Prometheus) expose(hCh chan *decoder.HEP) {
 					logp.Warn("%v", err)
 				}
 				methodResponses.WithLabelValues("", "", pkt.Node, pkt.SIP.FirstMethod, pkt.SIP.CseqMethod, pkt.SIP.FromUser).Inc()
+
 			}
 
 			p.requestDelay(st, dt, pkt.CID, pkt.SIP.FirstMethod, pkt.SIP.CseqMethod, pkt.Timestamp)
