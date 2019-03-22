@@ -104,10 +104,10 @@ func (p *Prometheus) expose(hCh chan *decoder.HEP) {
 					logp.Warn("%v", err)
 				}
 				methodResponsesAll.WithLabelValues("", "", pkt.SIP.FirstMethod, pkt.SIP.CseqMethod).Inc()
+				set("a", "hello")
+				logp.Info(getStringValue("a"))
 				if p.inArry(pkt.SIP.FromUser) {
 					methodResponses.WithLabelValues("", "", pkt.SIP.FirstMethod, pkt.SIP.CseqMethod, pkt.SIP.FromUser).Inc()
-					set("a", "hello")
-					logp.Info(getStringValue("a"))
 
 				}
 
