@@ -2,6 +2,7 @@ package metric
 
 import (
 	"fmt"
+	"github.com/garyburd/redigo/redis"
 	"regexp"
 	"strings"
 	"sync"
@@ -23,6 +24,15 @@ type Prometheus struct {
 	cache       *freecache.Cache
 	lruID       *lru.Cache
 }
+
+const (
+	RedisURL            = "redis://172.16.24.80:6400"
+	redisMaxIdle        = 3   //最大空闲连接数
+	redisIdleTimeoutSec = 240 //最大空闲连接时间
+	RedisPassword       = "cqtredis1234"
+)
+
+var pool = NewRedisPool(RedisURL)
 
 func (p *Prometheus) setup() (err error) {
 	p.TargetConf = new(sync.RWMutex)
@@ -74,14 +84,14 @@ func (p *Prometheus) expose(hCh chan *decoder.HEP) {
 				if ok {
 					methodResponsesAll.WithLabelValues(st, "src", pkt.SIP.FirstMethod, pkt.SIP.CseqMethod).Inc()
 					if p.inArry(pkt.SIP.FromUser) {
-						methodResponses.WithLabelValues(st, "src", "", pkt.SIP.FirstMethod, pkt.SIP.CseqMethod, pkt.SIP.FromUser).Inc()
+						methodResponses.WithLabelValues(st, "src", pkt.SIP.FirstMethod, pkt.SIP.CseqMethod, pkt.SIP.FromUser).Inc()
 					}
 				}
 				dt, ok = p.TargetMap[pkt.DstIP]
 				if ok {
 					methodResponsesAll.WithLabelValues(dt, "dst", pkt.SIP.FirstMethod, pkt.SIP.CseqMethod).Inc()
 					if p.inArry(pkt.SIP.FromUser) {
-						methodResponses.WithLabelValues(dt, "dst", "", pkt.SIP.FirstMethod, pkt.SIP.CseqMethod, pkt.SIP.FromUser).Inc()
+						methodResponses.WithLabelValues(dt, "dst", pkt.SIP.FirstMethod, pkt.SIP.CseqMethod, pkt.SIP.FromUser).Inc()
 					}
 				}
 			} else {
@@ -96,6 +106,9 @@ func (p *Prometheus) expose(hCh chan *decoder.HEP) {
 				methodResponsesAll.WithLabelValues("", "", pkt.SIP.FirstMethod, pkt.SIP.CseqMethod).Inc()
 				if p.inArry(pkt.SIP.FromUser) {
 					methodResponses.WithLabelValues("", "", pkt.SIP.FirstMethod, pkt.SIP.CseqMethod, pkt.SIP.FromUser).Inc()
+					set("a", "hello")
+					logp.Info(getStringValue("a"))
+
 				}
 
 			}
@@ -181,4 +194,49 @@ func (p *Prometheus) inArry(key string) bool {
 
 	return false
 
+}
+
+func NewRedisPool(redisURL string) *redis.Pool {
+	return &redis.Pool{
+		MaxIdle:     redisMaxIdle,
+		IdleTimeout: redisIdleTimeoutSec * time.Second,
+		Dial: func() (redis.Conn, error) {
+			c, err := redis.DialURL(redisURL)
+			if err != nil {
+				return nil, fmt.Errorf("redis connection error: %s", err)
+			}
+			//验证redis密码
+			if _, authErr := c.Do("AUTH", RedisPassword); authErr != nil {
+				return nil, fmt.Errorf("redis auth password error: %s", authErr)
+			}
+			return c, err
+		},
+		TestOnBorrow: func(c redis.Conn, t time.Time) error {
+			_, err := c.Do("PING")
+			if err != nil {
+				return fmt.Errorf("ping redis error: %s", err)
+			}
+			return nil
+		},
+	}
+}
+
+func set(k, v string) {
+	c := pool.Get()
+	defer c.Close()
+	_, err := c.Do("SET", k, v)
+	if err != nil {
+		fmt.Println("set error", err.Error())
+	}
+}
+
+func getStringValue(k string) string {
+	c := pool.Get()
+	defer c.Close()
+	username, err := redis.String(c.Do("GET", k))
+	if err != nil {
+		fmt.Println("Get Error: ", err.Error())
+		return ""
+	}
+	return username
 }
