@@ -95,7 +95,7 @@ func (p *Prometheus) expose(hCh chan *decoder.HEP) {
 				}
 				methodResponsesAll.WithLabelValues("", "", pkt.SIP.FirstMethod, pkt.SIP.CseqMethod).Inc()
 				if p.inArry(pkt.SIP.FromUser) {
-					methodResponses.WithLabelValues("", "", pkt.Node, pkt.SIP.FirstMethod, pkt.SIP.CseqMethod, pkt.SIP.FromUser).Inc()
+					methodResponses.WithLabelValues("", "", pkt.SIP.FirstMethod, pkt.SIP.CseqMethod, pkt.SIP.FromUser).Inc()
 				}
 
 			}
