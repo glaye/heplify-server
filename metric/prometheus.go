@@ -72,14 +72,14 @@ func (p *Prometheus) expose(hCh chan *decoder.HEP) {
 				var ok bool
 				st, ok = p.TargetMap[pkt.SrcIP]
 				if ok {
-					methodResponsesAll.WithLabelValues(st, "src", "", pkt.SIP.FirstMethod, pkt.SIP.CseqMethod).Inc()
+					methodResponsesAll.WithLabelValues(st, "src", pkt.SIP.FirstMethod, pkt.SIP.CseqMethod).Inc()
 					if p.inArry(pkt.SIP.FromUser) {
 						methodResponses.WithLabelValues(st, "src", "", pkt.SIP.FirstMethod, pkt.SIP.CseqMethod, pkt.SIP.FromUser).Inc()
 					}
 				}
 				dt, ok = p.TargetMap[pkt.DstIP]
 				if ok {
-					methodResponsesAll.WithLabelValues(dt, "dst", "", pkt.SIP.FirstMethod, pkt.SIP.CseqMethod).Inc()
+					methodResponsesAll.WithLabelValues(dt, "dst", pkt.SIP.FirstMethod, pkt.SIP.CseqMethod).Inc()
 					if p.inArry(pkt.SIP.FromUser) {
 						methodResponses.WithLabelValues(dt, "dst", "", pkt.SIP.FirstMethod, pkt.SIP.CseqMethod, pkt.SIP.FromUser).Inc()
 					}
@@ -93,7 +93,7 @@ func (p *Prometheus) expose(hCh chan *decoder.HEP) {
 				if err != nil {
 					logp.Warn("%v", err)
 				}
-				methodResponsesAll.WithLabelValues("", "", pkt.Node, pkt.SIP.FirstMethod, pkt.SIP.CseqMethod).Inc()
+				methodResponsesAll.WithLabelValues("", "", pkt.SIP.FirstMethod, pkt.SIP.CseqMethod).Inc()
 				if p.inArry(pkt.SIP.FromUser) {
 					methodResponses.WithLabelValues("", "", pkt.Node, pkt.SIP.FirstMethod, pkt.SIP.CseqMethod, pkt.SIP.FromUser).Inc()
 				}
