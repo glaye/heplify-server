@@ -2,6 +2,7 @@ package metric
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -58,6 +59,7 @@ func (p *Prometheus) setup() (err error) {
 }
 
 func (p *Prometheus) expose(hCh chan *decoder.HEP) {
+
 	for pkt := range hCh {
 		labelType := decoder.HEPTypeString(pkt.ProtoType)
 
@@ -70,11 +72,17 @@ func (p *Prometheus) expose(hCh chan *decoder.HEP) {
 				var ok bool
 				st, ok = p.TargetMap[pkt.SrcIP]
 				if ok {
-					methodResponses.WithLabelValues(st, "src", "", pkt.SIP.FirstMethod, pkt.SIP.CseqMethod, pkt.SIP.FromUser).Inc()
+					methodResponsesAll.WithLabelValues(st, "src", "", pkt.SIP.FirstMethod, pkt.SIP.CseqMethod).Inc()
+					if p.inArry(pkt.SIP.FromUser) {
+						methodResponses.WithLabelValues(st, "src", "", pkt.SIP.FirstMethod, pkt.SIP.CseqMethod, pkt.SIP.FromUser).Inc()
+					}
 				}
 				dt, ok = p.TargetMap[pkt.DstIP]
 				if ok {
-					methodResponses.WithLabelValues(dt, "dst", "", pkt.SIP.FirstMethod, pkt.SIP.CseqMethod, pkt.SIP.FromUser).Inc()
+					methodResponsesAll.WithLabelValues(dt, "dst", "", pkt.SIP.FirstMethod, pkt.SIP.CseqMethod).Inc()
+					if p.inArry(pkt.SIP.FromUser) {
+						methodResponses.WithLabelValues(dt, "dst", "", pkt.SIP.FirstMethod, pkt.SIP.CseqMethod, pkt.SIP.FromUser).Inc()
+					}
 				}
 			} else {
 				_, err := p.cache.Get([]byte(pkt.CID + pkt.SIP.FirstMethod + pkt.SIP.CseqMethod))
@@ -85,7 +93,10 @@ func (p *Prometheus) expose(hCh chan *decoder.HEP) {
 				if err != nil {
 					logp.Warn("%v", err)
 				}
-				methodResponses.WithLabelValues("", "", pkt.Node, pkt.SIP.FirstMethod, pkt.SIP.CseqMethod, pkt.SIP.FromUser).Inc()
+				methodResponsesAll.WithLabelValues("", "", pkt.Node, pkt.SIP.FirstMethod, pkt.SIP.CseqMethod).Inc()
+				if p.inArry(pkt.SIP.FromUser) {
+					methodResponses.WithLabelValues("", "", pkt.Node, pkt.SIP.FirstMethod, pkt.SIP.CseqMethod, pkt.SIP.FromUser).Inc()
+				}
 
 			}
 
@@ -140,4 +151,34 @@ func (p *Prometheus) requestDelay(st, dt, cid, sm, cm string, ts time.Time) {
 			p.lruID.Remove(did)
 		}
 	}
+}
+
+func (p *Prometheus) inArry(key string) bool {
+
+	match, _ := regexp.MatchString(".*95078001", key)
+	if match {
+		return true
+	}
+
+	match, _ = regexp.MatchString(".*95078002", key)
+	if match {
+		return true
+	}
+
+	match, _ = regexp.MatchString(".*95078003", key)
+	if match {
+		return true
+	}
+
+	match, _ = regexp.MatchString(".*95078711", key)
+	if match {
+		return true
+	}
+	match, _ = regexp.MatchString(".*95753", key)
+	if match {
+		return true
+	}
+
+	return false
+
 }

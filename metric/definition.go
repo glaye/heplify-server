@@ -15,6 +15,10 @@ var (
 		Name: "heplify_packets_size",
 		Help: "Packet size by HEP type"},
 		[]string{"type"})
+	methodResponsesAll = promauto.NewCounterVec(prometheus.CounterOpts{
+		Name: "heplify_method_response_all",
+		Help: "SIP method and response counter[all]"},
+		[]string{"target_name", "direction", "response", "method"})
 	methodResponses = promauto.NewCounterVec(prometheus.CounterOpts{
 		Name: "heplify_method_response",
 		Help: "SIP method and response counter"},
