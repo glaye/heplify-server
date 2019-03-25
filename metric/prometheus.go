@@ -241,7 +241,7 @@ func getStringValue(k string) (string, error) {
 	username, err := redis.String(c.Do("GET", k))
 	if err != nil {
 		//fmt.Println("Get Error: ", err.Error())
-		logp.Err(err.Error())
+		//logp.Err(err.Error())
 		return "", err
 	}
 	return username, nil
