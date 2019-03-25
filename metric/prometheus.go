@@ -173,7 +173,7 @@ func (p *Prometheus) countASR(dt, st, nodeID, firstMethod, cseqMethod, caller, c
 		// 统计该主叫的被叫所属省份的method
 		cityString, err := getCity(called)
 		if err != nil {
-			logp.Err(err.Error())
+			//logp.Err(err.Error())
 			return
 		} else {
 			methodResponsesCalledCityASR.WithLabelValues(dt, st, nodeID, firstMethod, cseqMethod, countItem, cityString).Inc()
