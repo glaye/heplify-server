@@ -185,7 +185,7 @@ func (p *Prometheus) isCountCaller(key string) (string, bool) {
 	callerArray := strings.Split(callers, ",")
 	for _, caller := range callerArray {
 		//for的第一个参数是索引，这里用不上
-		fmt.Println(caller)
+		//fmt.Println(caller)
 		match, _ := regexp.MatchString(".*"+caller, key)
 		if match {
 			return caller, true
