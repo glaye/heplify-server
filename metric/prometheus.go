@@ -171,7 +171,7 @@ func (p *Prometheus) countASR(dt, st, nodeID, firstMethod, cseqMethod, caller, c
 			logp.Err(err.Error())
 			return
 		} else {
-			methodResponsesCalledCityASR.WithLabelValues(dt, st, nodeID, firstMethod, cseqMethod, cityString).Inc()
+			methodResponsesCalledCityASR.WithLabelValues(dt, st, nodeID, firstMethod, cseqMethod, countItem, cityString).Inc()
 		}
 	}
 }
