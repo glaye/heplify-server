@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/garyburd/redigo/redis"
 	"regexp"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -71,6 +72,7 @@ func (p *Prometheus) setup() (err error) {
 func (p *Prometheus) expose(hCh chan *decoder.HEP) {
 
 	for pkt := range hCh {
+		nodeID := strconv.Itoa(int(pkt.NodeID))
 		labelType := decoder.HEPTypeString(pkt.ProtoType)
 
 		packetsByType.WithLabelValues(labelType).Inc()
@@ -82,17 +84,13 @@ func (p *Prometheus) expose(hCh chan *decoder.HEP) {
 				var ok bool
 				st, ok = p.TargetMap[pkt.SrcIP]
 				if ok {
-					methodResponsesAll.WithLabelValues(st, "src", pkt.SIP.FirstMethod, pkt.SIP.CseqMethod).Inc()
-					if p.inArry(pkt.SIP.FromUser) {
-						methodResponses.WithLabelValues(st, "src", pkt.SIP.FirstMethod, pkt.SIP.CseqMethod, pkt.SIP.FromUser).Inc()
-					}
+					methodResponsesOrig.WithLabelValues(st, "src", nodeID, pkt.SIP.FirstMethod, pkt.SIP.CseqMethod).Inc()
+					p.countCallerASR(st, "src", nodeID, pkt.SIP.FirstMethod, pkt.SIP.CseqMethod, pkt.SIP.FromUser)
 				}
 				dt, ok = p.TargetMap[pkt.DstIP]
 				if ok {
-					methodResponsesAll.WithLabelValues(dt, "dst", pkt.SIP.FirstMethod, pkt.SIP.CseqMethod).Inc()
-					if p.inArry(pkt.SIP.FromUser) {
-						methodResponses.WithLabelValues(dt, "dst", pkt.SIP.FirstMethod, pkt.SIP.CseqMethod, pkt.SIP.FromUser).Inc()
-					}
+					methodResponsesOrig.WithLabelValues(dt, "dst", nodeID, pkt.SIP.FirstMethod, pkt.SIP.CseqMethod).Inc()
+					p.countCallerASR(dt, "dst", nodeID, pkt.SIP.FirstMethod, pkt.SIP.CseqMethod, pkt.SIP.FromUser)
 				}
 			} else {
 				_, err := p.cache.Get([]byte(pkt.CID + pkt.SIP.FirstMethod + pkt.SIP.CseqMethod))
@@ -103,13 +101,8 @@ func (p *Prometheus) expose(hCh chan *decoder.HEP) {
 				if err != nil {
 					logp.Warn("%v", err)
 				}
-				methodResponsesAll.WithLabelValues("", "", pkt.SIP.FirstMethod, pkt.SIP.CseqMethod).Inc()
-				set("a", "hello")
-				logp.Info(getStringValue("a"))
-				if p.inArry(pkt.SIP.FromUser) {
-					methodResponses.WithLabelValues("", "", pkt.SIP.FirstMethod, pkt.SIP.CseqMethod, pkt.SIP.FromUser).Inc()
-
-				}
+				methodResponsesOrig.WithLabelValues("", "", nodeID, pkt.SIP.FirstMethod, pkt.SIP.CseqMethod).Inc()
+				p.countCallerASR("", "", nodeID, pkt.SIP.FirstMethod, pkt.SIP.CseqMethod, pkt.SIP.FromUser)
 
 			}
 
@@ -166,33 +159,39 @@ func (p *Prometheus) requestDelay(st, dt, cid, sm, cm string, ts time.Time) {
 	}
 }
 
-func (p *Prometheus) inArry(key string) bool {
-
-	match, _ := regexp.MatchString(".*95078001", key)
-	if match {
-		return true
+func (p *Prometheus) countCallerASR(dt, st, nodeID, firstMethod, cseqMethod, caller string) {
+	countItem, isCountCaller := p.isCountCaller(caller)
+	if isCountCaller {
+		methodResponsesCallerASR.WithLabelValues(dt, st, nodeID, firstMethod, cseqMethod, countItem).Inc()
 	}
+}
 
-	match, _ = regexp.MatchString(".*95078002", key)
-	if match {
-		return true
+func (p *Prometheus) countCalledCityASR(dt, st, nodeID, firstMethod, cseqMethod, called string) {
+	cityString, err := getCity(called)
+	if err != nil {
+		logp.Err(err.Error())
+		return
+	} else {
+		methodResponsesCalledCityASR.WithLabelValues(dt, st, nodeID, firstMethod, cseqMethod, cityString).Inc()
 	}
+}
 
-	match, _ = regexp.MatchString(".*95078003", key)
-	if match {
-		return true
-	}
+func (p *Prometheus) isCountCaller(key string) (string, bool) {
 
-	match, _ = regexp.MatchString(".*95078711", key)
-	if match {
-		return true
+	callers, err := getStringValue("countCallerArray")
+	if err != nil {
+		return "", false
 	}
-	match, _ = regexp.MatchString(".*95753", key)
-	if match {
-		return true
+	callerArray := strings.Split(callers, ",")
+	for _, caller := range callerArray {
+		//for的第一个参数是索引，这里用不上
+		fmt.Println(caller)
+		match, _ := regexp.MatchString(".*"+caller, key)
+		if match {
+			return caller, true
+		}
 	}
-
-	return false
+	return "", false //到这里就是没匹配上
 
 }
 
@@ -221,22 +220,27 @@ func NewRedisPool(redisURL string) *redis.Pool {
 	}
 }
 
-func set(k, v string) {
-	c := pool.Get()
-	defer c.Close()
-	_, err := c.Do("SET", k, v)
-	if err != nil {
-		fmt.Println("set error", err.Error())
-	}
-}
-
-func getStringValue(k string) string {
+func getStringValue(k string) (string, error) {
 	c := pool.Get()
 	defer c.Close()
 	username, err := redis.String(c.Do("GET", k))
 	if err != nil {
-		fmt.Println("Get Error: ", err.Error())
-		return ""
+		//fmt.Println("Get Error: ", err.Error())
+		logp.Err(err.Error())
+		return "", err
 	}
-	return username
+	return username, nil
+}
+
+func getCity(called string) (string, error) {
+	tmp := called
+	if tmp[:1] == "0" {
+		//fmt.Println("切割了")
+		tmp = tmp[1:8]
+	} else {
+		tmp = tmp[0:7]
+	}
+	//fmt.Println(tmp)
+	rtn, err := getStringValue(tmp)
+	return rtn, err
 }

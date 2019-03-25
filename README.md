@@ -25,6 +25,8 @@
     
         FLUSH PRIVILEGES;
 * 5 删除metric中的node_id，找不到它的规律，感觉目录是没用的
+* 6 修改默认数据库为wgy_*，修改PromTargetIP和PromTargetName的默认值为空
+* 7 nodeID是uint32的，范围0到4294967295
 
 ### Installation
 You have 3 options to get **heplify-server** up and running:

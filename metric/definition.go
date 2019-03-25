@@ -15,14 +15,18 @@ var (
 		Name: "heplify_packets_size",
 		Help: "Packet size by HEP type"},
 		[]string{"type"})
-	methodResponsesAll = promauto.NewCounterVec(prometheus.CounterOpts{
-		Name: "heplify_method_response_all",
-		Help: "SIP method and response counter[all]"},
-		[]string{"target_name", "direction", "response", "method"})
-	methodResponses = promauto.NewCounterVec(prometheus.CounterOpts{
-		Name: "heplify_method_response",
+	methodResponsesOrig = promauto.NewCounterVec(prometheus.CounterOpts{
+		Name: "heplify_method_response_orig",
 		Help: "SIP method and response counter"},
-		[]string{"target_name", "direction", "response", "method", "caller"})
+		[]string{"target_name", "direction", "node_id", "response", "method"})
+	methodResponsesCallerASR = promauto.NewCounterVec(prometheus.CounterOpts{
+		Name: "heplify_method_response_caller_asr",
+		Help: "SIP method and response counter"},
+		[]string{"target_name", "direction", "node_id", "response", "method", "caller"})
+	methodResponsesCalledCityASR = promauto.NewCounterVec(prometheus.CounterOpts{
+		Name: "heplify_called_city_asr",
+		Help: "SIP method and response counter"},
+		[]string{"target_name", "direction", "node_id", "response", "method", "city"})
 	reasonCause = promauto.NewCounterVec(prometheus.CounterOpts{
 		Name: "heplify_reason_isup_total",
 		Help: "ISUP Q.850 cause from reason header"},
