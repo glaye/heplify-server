@@ -34,7 +34,12 @@ const (
 	RedisPassword       = "cqtredis1234"
 )
 
-var pool = NewRedisPool(RedisURL)
+var (
+	pool        = NewRedisPool(RedisURL)
+	ydRegexp, _ = regexp.Compile("1(3[4-9]|47|5[0-2|7-9]|70[3|5|6]|78|8[2-4|7|8]|98|65)[0-9]*")
+	ltRegexp, _ = regexp.Compile("1(3[0-2] | 45 | 5[5|6] | 70[4|7|8|9] | 7[1|5|6] | 8[5|6] | 6(6|7))[0-9]*")
+	dxRegexp, _ = regexp.Compile("1(33 | 49 | 53 | 70[0|1|2] | 7[3|7] | 8[0|1|9] | 9[1|9])[0-9]*")
+)
 
 func (p *Prometheus) setup() (err error) {
 	p.TargetConf = new(sync.RWMutex)
@@ -173,6 +178,16 @@ func (p *Prometheus) countASR(dt, st, nodeID, firstMethod, cseqMethod, caller, c
 		} else {
 			methodResponsesCalledCityASR.WithLabelValues(dt, st, nodeID, firstMethod, cseqMethod, countItem, cityString).Inc()
 		}
+
+		//运营商统计
+		operator, err := getOperator(called)
+		if err != nil {
+			logp.Err(err.Error())
+			return
+		} else {
+			methodResponsesCalledOperASR.WithLabelValues(dt, st, nodeID, firstMethod, cseqMethod, countItem, operator).Inc()
+		}
+
 	}
 }
 
@@ -251,4 +266,20 @@ func getCity(called string) (string, error) {
 	//fmt.Println(tmp)
 	rtn, err := getStringValue(tmp)
 	return rtn, err
+}
+
+func getOperator(called string) (string, error) {
+	match := ydRegexp.MatchString(called)
+	if match {
+		return "yidong", nil
+	}
+	match = ltRegexp.MatchString(called)
+	if match {
+		return "liantong", nil
+	}
+	match = dxRegexp.MatchString(called)
+	if match {
+		return "dianxin", nil
+	}
+	return "", errors.New("no match operator!!!")
 }

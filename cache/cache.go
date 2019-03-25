@@ -19,7 +19,28 @@ const (
 	RedisPassword       = "cqtredis1234"
 )
 
-var pool = NewRedisPool(RedisURL)
+var (
+	pool        = NewRedisPool(RedisURL)
+	ydRegexp, _ = regexp.Compile("1(3[4-9]|47|5[0-2|7-9]|70[3|5|6]|78|8[2-4|7|8]|98|65)[0-9]*")
+	ltRegexp, _ = regexp.Compile("1(3[0-2] | 45 | 5[5|6] | 70[4|7|8|9] | 7[1|5|6] | 8[5|6] | 6(6|7))[0-9]*")
+	dxRegexp, _ = regexp.Compile("1(33 | 49 | 53 | 70[0|1|2] | 7[3|7] | 8[0|1|9] | 9[1|9])[0-9]*")
+)
+
+func getOperator(called string) (string, error) {
+	match := ydRegexp.MatchString(called)
+	if match {
+		return "yidong", nil
+	}
+	match = ltRegexp.MatchString(called)
+	if match {
+		return "liantong", nil
+	}
+	match = dxRegexp.MatchString(called)
+	if match {
+		return "dianxin", nil
+	}
+	return "", errors.New("no match operator!!!")
+}
 
 // NewRedisPool 返回redis连接池
 func NewRedisPool(redisURL string) *redis.Pool {
@@ -184,5 +205,10 @@ func main() {
 
 	fmt.Println("333333333333333333333333")
 	fmt.Println(nodeID)
+
+	r, _ := regexp.Compile("1(3[4-9]|47|5[0-2|7-9]|70[3|5|6]|78|8[2-4|7|8]|98|65)[0-9]*")
+	print(r.MatchString("13810107660"))
+
+	fmt.Println(getOperator("13810107660"))
 
 }
