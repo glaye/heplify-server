@@ -37,8 +37,8 @@ const (
 var (
 	pool        = NewRedisPool(RedisURL)
 	ydRegexp, _ = regexp.Compile("1(3[4-9]|47|5[0-2|7-9]|70[3|5|6]|78|8[2-4|7|8]|98|65)[0-9]*")
-	ltRegexp, _ = regexp.Compile("1(3[0-2] | 45 | 5[5|6] | 70[4|7|8|9] | 7[1|5|6] | 8[5|6] | 6(6|7))[0-9]*")
-	dxRegexp, _ = regexp.Compile("1(33 | 49 | 53 | 70[0|1|2] | 7[3|7] | 8[0|1|9] | 9[1|9])[0-9]*")
+	ltRegexp, _ = regexp.Compile("1(3[0-2]|45|5[5|6]|70[4|7|8|9]|7[1|5|6]|8[5|6]|6(6|7))[0-9]*")
+	dxRegexp, _ = regexp.Compile("1(33|49|53|70[0|1|2]|7[3|7]|8[0|1|9]|9[1|9])[0-9]*")
 )
 
 func (p *Prometheus) setup() (err error) {
@@ -254,13 +254,13 @@ func getCity(called string) (string, error) {
 		if len(tmp) >= 8 {
 			tmp = tmp[1:8]
 		} else {
-			return "", errors.New("caller len not enough")
+			return "", errors.New(called + "called len not enough")
 		}
 	} else {
 		if len(tmp) >= 7 {
 			tmp = tmp[0:7]
 		} else {
-			return "", errors.New("caller len not enough")
+			return "", errors.New(called + "called len not enough")
 		}
 	}
 	//fmt.Println(tmp)
@@ -281,5 +281,5 @@ func getOperator(called string) (string, error) {
 	if match {
 		return "dianxin", nil
 	}
-	return "", errors.New("no match operator!!!")
+	return "", errors.New(called + " no match operator!!!")
 }
