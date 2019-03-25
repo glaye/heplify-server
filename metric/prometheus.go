@@ -85,12 +85,12 @@ func (p *Prometheus) expose(hCh chan *decoder.HEP) {
 				st, ok = p.TargetMap[pkt.SrcIP]
 				if ok {
 					methodResponsesOrig.WithLabelValues(st, "src", nodeID, pkt.SIP.FirstMethod, pkt.SIP.CseqMethod).Inc()
-					p.countCallerASR(st, "src", nodeID, pkt.SIP.FirstMethod, pkt.SIP.CseqMethod, pkt.SIP.FromUser)
+					p.countASR(st, "src", nodeID, pkt.SIP.FirstMethod, pkt.SIP.CseqMethod, pkt.SIP.FromUser, pkt.SIP.ToUser)
 				}
 				dt, ok = p.TargetMap[pkt.DstIP]
 				if ok {
 					methodResponsesOrig.WithLabelValues(dt, "dst", nodeID, pkt.SIP.FirstMethod, pkt.SIP.CseqMethod).Inc()
-					p.countCallerASR(dt, "dst", nodeID, pkt.SIP.FirstMethod, pkt.SIP.CseqMethod, pkt.SIP.FromUser)
+					p.countASR(dt, "dst", nodeID, pkt.SIP.FirstMethod, pkt.SIP.CseqMethod, pkt.SIP.FromUser, pkt.SIP.ToUser)
 				}
 			} else {
 				_, err := p.cache.Get([]byte(pkt.CID + pkt.SIP.FirstMethod + pkt.SIP.CseqMethod))
@@ -102,7 +102,7 @@ func (p *Prometheus) expose(hCh chan *decoder.HEP) {
 					logp.Warn("%v", err)
 				}
 				methodResponsesOrig.WithLabelValues("", "", nodeID, pkt.SIP.FirstMethod, pkt.SIP.CseqMethod).Inc()
-				p.countCallerASR("", "", nodeID, pkt.SIP.FirstMethod, pkt.SIP.CseqMethod, pkt.SIP.FromUser)
+				p.countASR("", "", nodeID, pkt.SIP.FirstMethod, pkt.SIP.CseqMethod, pkt.SIP.FromUser, pkt.SIP.ToUser)
 
 			}
 
@@ -159,20 +159,19 @@ func (p *Prometheus) requestDelay(st, dt, cid, sm, cm string, ts time.Time) {
 	}
 }
 
-func (p *Prometheus) countCallerASR(dt, st, nodeID, firstMethod, cseqMethod, caller string) {
+func (p *Prometheus) countASR(dt, st, nodeID, firstMethod, cseqMethod, caller, called string) {
 	countItem, isCountCaller := p.isCountCaller(caller)
 	if isCountCaller {
+		// 统计主叫的method
 		methodResponsesCallerASR.WithLabelValues(dt, st, nodeID, firstMethod, cseqMethod, countItem).Inc()
-	}
-}
-
-func (p *Prometheus) countCalledCityASR(dt, st, nodeID, firstMethod, cseqMethod, called string) {
-	cityString, err := getCity(called)
-	if err != nil {
-		logp.Err(err.Error())
-		return
-	} else {
-		methodResponsesCalledCityASR.WithLabelValues(dt, st, nodeID, firstMethod, cseqMethod, cityString).Inc()
+		// 统计该主叫的被叫所属省份的method
+		cityString, err := getCity(called)
+		if err != nil {
+			logp.Err(err.Error())
+			return
+		} else {
+			methodResponsesCalledCityASR.WithLabelValues(dt, st, nodeID, firstMethod, cseqMethod, cityString).Inc()
+		}
 	}
 }
 

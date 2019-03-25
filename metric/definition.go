@@ -26,7 +26,7 @@ var (
 	methodResponsesCalledCityASR = promauto.NewCounterVec(prometheus.CounterOpts{
 		Name: "heplify_called_city_asr",
 		Help: "SIP method and response counter"},
-		[]string{"target_name", "direction", "node_id", "response", "method", "city"})
+		[]string{"target_name", "direction", "node_id", "response", "method", "caller", "city"})
 	reasonCause = promauto.NewCounterVec(prometheus.CounterOpts{
 		Name: "heplify_reason_isup_total",
 		Help: "ISUP Q.850 cause from reason header"},
