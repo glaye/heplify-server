@@ -3,6 +3,7 @@ package metric
 import (
 	"fmt"
 	"github.com/garyburd/redigo/redis"
+	"github.com/pkg/errors"
 	"regexp"
 	"strconv"
 	"strings"
@@ -235,9 +236,17 @@ func getCity(called string) (string, error) {
 	tmp := called
 	if tmp[:1] == "0" {
 		//fmt.Println("切割了")
-		tmp = tmp[1:8]
+		if len(tmp) >= 8 {
+			tmp = tmp[1:8]
+		} else {
+			return "", errors.New("caller len not enough")
+		}
 	} else {
-		tmp = tmp[0:7]
+		if len(tmp) >= 7 {
+			tmp = tmp[0:7]
+		} else {
+			return "", errors.New("caller len not enough")
+		}
 	}
 	//fmt.Println(tmp)
 	rtn, err := getStringValue(tmp)

@@ -151,7 +151,7 @@ func main() {
 	//incr("a")
 	//incr("a")
 	//incr("")
-	set("countCallerArray", "95078001,95078002,95078003,95078711,95753")
+	set("countCallerArray", "95078001,95078002,95078003,95078711,95753,1002")
 	//fmt.Println(getStringValue("a"))
 	//s := "13810107660"
 	//s = string([]rune(s)[1:])
@@ -177,7 +177,7 @@ func main() {
 	//fmt.Printf("城市：%s", cityString)
 	//fmt.Printf("错误：%s", err)
 	//node = 10240120060
-	node := "10240120060"
+	node := 10240120060
 	fmt.Printf("%T\n", node)
 	nodeID := strconv.Itoa(int(node))
 	//nodeID = strconv.FormatInt(int64(node), 10)
