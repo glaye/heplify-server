@@ -248,6 +248,9 @@ func getStringValue(k string) (string, error) {
 }
 
 func getCity(called string) (string, error) {
+	if len(called) < 5 {
+		return "", errors.New("called len not enough")
+	}
 	tmp := called
 	if tmp[:1] == "0" {
 		//fmt.Println("切割了")

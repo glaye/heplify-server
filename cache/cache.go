@@ -151,6 +151,9 @@ func getJsonByte(k string) ([]byte, error) {
 }
 
 func getCity(called string) (string, error) {
+	if len(called) < 5 {
+		return "", errors.New("called len not enough")
+	}
 	tmp := called
 	if tmp[:1] == "0" {
 		//fmt.Println("切割了")
@@ -172,7 +175,7 @@ func main() {
 	//incr("a")
 	//incr("a")
 	//incr("")
-	set("countCallerArray", "95078001,95078002,95078003,95078711,95753,1002")
+	set("countCallerArray", "95078001,95078002,95078003,95078006,95078007,95078008,95078711,95753,95066")
 	//fmt.Println(getStringValue("a"))
 	//s := "13810107660"
 	//s = string([]rune(s)[1:])
@@ -212,5 +215,8 @@ func main() {
 	fmt.Println(getOperator("13810107660"))
 	fmt.Println(getOperator("18632366206"))
 	fmt.Println(getOperator("13332353323"))
+
+	a, b := getCity("1")
+	fmt.Println(a, b)
 
 }
