@@ -15,22 +15,14 @@ var (
 		Name: "heplify_packets_size",
 		Help: "Packet size by HEP type"},
 		[]string{"type"})
-	methodResponsesOrig = promauto.NewCounterVec(prometheus.CounterOpts{
-		Name: "heplify_method_response_orig",
-		Help: "SIP method and response counter(origation)"},
+	methodResponses = promauto.NewCounterVec(prometheus.CounterOpts{
+		Name: "heplify_method_response",
+		Help: "SIP method and response counter"},
 		[]string{"target_name", "direction", "node_id", "response", "method"})
-	methodResponsesCallerASR = promauto.NewCounterVec(prometheus.CounterOpts{
-		Name: "heplify_method_response_caller_asr",
-		Help: "SIP method and response counter(caller asr)"},
-		[]string{"target_name", "direction", "node_id", "response", "method", "caller"})
-	methodResponsesCalledCityASR = promauto.NewCounterVec(prometheus.CounterOpts{
-		Name: "heplify_called_city_asr",
-		Help: "SIP method and response counter(called city asr)"},
-		[]string{"target_name", "direction", "node_id", "response", "method", "caller", "city"})
-	methodResponsesCalledOperASR = promauto.NewCounterVec(prometheus.CounterOpts{
-		Name: "heplify_called_oper_asr",
-		Help: "SIP method and response counter(called operator asr)"},
-		[]string{"target_name", "direction", "node_id", "response", "method", "caller", "operator"})
+	cityOperatorCallerMethodResponses = promauto.NewCounterVec(prometheus.CounterOpts{
+		Name: "city_operator_caller_method_response",
+		Help: "SIP city ,operator and caller's method and response counter"},
+		[]string{"city", "operator", "caller", "method", "response"})
 	reasonCause = promauto.NewCounterVec(prometheus.CounterOpts{
 		Name: "heplify_reason_isup_total",
 		Help: "ISUP Q.850 cause from reason header"},

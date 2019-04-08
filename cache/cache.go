@@ -218,5 +218,6 @@ func main() {
 
 	a, b := getCity("1")
 	fmt.Println(a, b)
+	fmt.Println(len("fdasfdsa"))
 
 }

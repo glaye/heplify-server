@@ -90,13 +90,11 @@ func (p *Prometheus) expose(hCh chan *decoder.HEP) {
 				var ok bool
 				st, ok = p.TargetMap[pkt.SrcIP]
 				if ok {
-					methodResponsesOrig.WithLabelValues(st, "src", nodeID, pkt.SIP.FirstMethod, pkt.SIP.CseqMethod).Inc()
-					p.countASR(st, "src", nodeID, pkt.SIP.FirstMethod, pkt.SIP.CseqMethod, pkt.SIP.FromUser, pkt.SIP.ToUser)
+					methodResponses.WithLabelValues(st, "src", nodeID, pkt.SIP.FirstMethod, pkt.SIP.CseqMethod).Inc()
 				}
 				dt, ok = p.TargetMap[pkt.DstIP]
 				if ok {
-					methodResponsesOrig.WithLabelValues(dt, "dst", nodeID, pkt.SIP.FirstMethod, pkt.SIP.CseqMethod).Inc()
-					p.countASR(dt, "dst", nodeID, pkt.SIP.FirstMethod, pkt.SIP.CseqMethod, pkt.SIP.FromUser, pkt.SIP.ToUser)
+					methodResponses.WithLabelValues(dt, "dst", nodeID, pkt.SIP.FirstMethod, pkt.SIP.CseqMethod).Inc()
 				}
 			} else {
 				_, err := p.cache.Get([]byte(pkt.CID + pkt.SIP.FirstMethod + pkt.SIP.CseqMethod))
@@ -107,10 +105,12 @@ func (p *Prometheus) expose(hCh chan *decoder.HEP) {
 				if err != nil {
 					logp.Warn("%v", err)
 				}
-				methodResponsesOrig.WithLabelValues("", "", nodeID, pkt.SIP.FirstMethod, pkt.SIP.CseqMethod).Inc()
-				p.countASR("", "", nodeID, pkt.SIP.FirstMethod, pkt.SIP.CseqMethod, pkt.SIP.FromUser, pkt.SIP.ToUser)
+				methodResponses.WithLabelValues("", "", nodeID, pkt.SIP.FirstMethod, pkt.SIP.CseqMethod).Inc()
 
 			}
+
+			// customCounter city operator and caller
+			p.customCounter(pkt.SIP.FirstMethod, pkt.SIP.CseqMethod, pkt.SIP.FromUser, pkt.SIP.ToUser)
 
 			p.requestDelay(st, dt, pkt.CID, pkt.SIP.FirstMethod, pkt.SIP.CseqMethod, pkt.Timestamp)
 
@@ -165,51 +165,26 @@ func (p *Prometheus) requestDelay(st, dt, cid, sm, cm string, ts time.Time) {
 	}
 }
 
-func (p *Prometheus) countASR(dt, st, nodeID, firstMethod, cseqMethod, caller, called string) {
+func (p *Prometheus) customCounter(firstMethod, cseqMethod, caller, called string) {
+	//判断主叫是否在统计列表中
 	countItem, isCountCaller := p.isCountCaller(caller)
 	if isCountCaller {
-		// 统计主叫的method
-		methodResponsesCallerASR.WithLabelValues(dt, st, nodeID, firstMethod, cseqMethod, countItem).Inc()
-		// 统计该主叫的被叫所属省份的method
-		cityString, err := getCity(called)
+		// 获得被叫所在省份
+		cityString, err := getProvinceFromCalled(called)
 		if err != nil {
-			//logp.Err(err.Error())
 			return
-		} else {
-			methodResponsesCalledCityASR.WithLabelValues(dt, st, nodeID, firstMethod, cseqMethod, countItem, cityString).Inc()
 		}
-
-		//运营商统计
-		operator, err := getOperator(called)
+		// 获得被叫所属运营商
+		operator, err := getOperatorFromCalled(called)
 		if err != nil {
 			logp.Err(err.Error())
 			return
-		} else {
-			methodResponsesCalledOperASR.WithLabelValues(dt, st, nodeID, firstMethod, cseqMethod, countItem, operator).Inc()
 		}
-
+		cityOperatorCallerMethodResponses.WithLabelValues(cityString, operator, countItem, firstMethod, cseqMethod).Inc()
 	}
 }
 
-func (p *Prometheus) isCountCaller(key string) (string, bool) {
-
-	callers, err := getStringValue("countCallerArray")
-	if err != nil {
-		return "", false
-	}
-	callerArray := strings.Split(callers, ",")
-	for _, caller := range callerArray {
-		//for的第一个参数是索引，这里用不上
-		//fmt.Println(caller)
-		match, _ := regexp.MatchString(".*"+caller, key)
-		if match {
-			return caller, true
-		}
-	}
-	return "", false //到这里就是没匹配上
-
-}
-
+// redis连接池
 func NewRedisPool(redisURL string) *redis.Pool {
 	return &redis.Pool{
 		MaxIdle:     redisMaxIdle,
@@ -235,6 +210,7 @@ func NewRedisPool(redisURL string) *redis.Pool {
 	}
 }
 
+// redis里取key的value
 func getStringValue(k string) (string, error) {
 	c := pool.Get()
 	defer c.Close()
@@ -247,7 +223,28 @@ func getStringValue(k string) (string, error) {
 	return username, nil
 }
 
-func getCity(called string) (string, error) {
+// 判断主叫是否在统计列表中
+func (p *Prometheus) isCountCaller(key string) (string, bool) {
+
+	callers, err := getStringValue("countCallerArray")
+	if err != nil {
+		return "", false
+	}
+	callerArray := strings.Split(callers, ",")
+	for _, caller := range callerArray {
+		//for的第一个参数是索引，这里用不上
+		//fmt.Println(caller)
+		match, _ := regexp.MatchString(".*"+caller, key)
+		if match {
+			return caller, true
+		}
+	}
+	return "", false //到这里就是没匹配上
+
+}
+
+// 获得被叫所属省份
+func getProvinceFromCalled(called string) (string, error) {
 	if len(called) < 5 {
 		return "", errors.New("called len not enough")
 	}
@@ -271,7 +268,8 @@ func getCity(called string) (string, error) {
 	return rtn, err
 }
 
-func getOperator(called string) (string, error) {
+// 获得被叫所属运营商
+func getOperatorFromCalled(called string) (string, error) {
 	match := ydRegexp.MatchString(called)
 	if match {
 		return "yidong", nil
