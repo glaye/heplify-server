@@ -22,7 +22,7 @@ var (
 	cityOperatorCallerMethodResponses = promauto.NewCounterVec(prometheus.CounterOpts{
 		Name: "city_operator_caller_method_response",
 		Help: "SIP city ,operator and caller's method and response counter"},
-		[]string{"city", "operator", "caller", "method", "response"})
+		[]string{"city", "operator", "caller", "response", "method"})
 	reasonCause = promauto.NewCounterVec(prometheus.CounterOpts{
 		Name: "heplify_reason_isup_total",
 		Help: "ISUP Q.850 cause from reason header"},

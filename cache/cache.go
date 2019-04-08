@@ -12,6 +12,7 @@ import (
 	"github.com/garyburd/redigo/redis"
 )
 
+// redis连接字符串
 const (
 	RedisURL            = "redis://172.16.24.80:6400"
 	redisMaxIdle        = 3   //最大空闲连接数
@@ -19,6 +20,7 @@ const (
 	RedisPassword       = "cqtredis1234"
 )
 
+// 三大运营商正则表达式
 var (
 	pool        = NewRedisPool(RedisURL)
 	ydRegexp, _ = regexp.Compile("1(3[4-9]|47|5[0-2|7-9]|70[3|5|6]|78|8[2-4|7|8]|98|65)[0-9]*")
@@ -175,7 +177,7 @@ func main() {
 	//incr("a")
 	//incr("a")
 	//incr("")
-	set("countCallerArray", "95078001,95078002,95078003,95078006,95078007,95078008,95078711,95753,95066")
+	set("countCallerArray", "95078001,95078002,95078003,95753,95066")
 	//fmt.Println(getStringValue("a"))
 	//s := "13810107660"
 	//s = string([]rune(s)[1:])
